@@ -116,7 +116,7 @@ export default function Navbar() {
                 <DropdownMenuItem
                   onClick={async () => {
                     await supabase.auth.signOut();
-                    window.location.href = '/login';
+                    window.location.href = '/';
                   }}
                 >
                   Sair
