@@ -1,55 +1,81 @@
-Lead – Internal Management System
+Com certeza! Deixei o texto com um visual profissional, organizado e pronto para um **README** de impacto no GitHub ou portfólio.
 
-Internal management system built with Next.js, Supabase, and ShadCN UI, focused on service tracking, permissions control, and role-based access.
+---
 
-Features
+# 🚀 Lead – Internal Management System
 
-User authentication with Supabase Auth
+Este projeto foi desenvolvido como um **Trabalho de Extensão Universitária**. O objetivo é aplicar conhecimentos técnicos em desenvolvimento web para resolver problemas reais de gestão interna, focando em segurança, escalabilidade e experiência do usuário (UX).
 
-Role-based access control (admin / user)
+---
 
-Services management
+### 📝 Sobre o Projeto
 
-Permissions management
+O **Lead** é um sistema de gerenciamento interno robusto, construído para facilitar o acompanhamento de serviços e o controle rigoroso de acessos. Através de uma interface moderna, ele permite que organizações gerenciem permissões de forma granular e segura.
 
-Admin-only navigation and actions
+---
 
-Secure backend with Row Level Security (RLS)
+### ✨ Funcionalidades Principais
 
-Tech Stack
+* 🔐 **Autenticação Completa:** Gerenciada via Supabase Auth.
+* 🛡️ **Controle de Acesso (RBAC):** Diferenciação clara entre níveis de acesso (*Admin* vs. *User*).
+* 🛠️ **Gestão de Serviços:** Interface intuitiva para criação e monitoramento de ordens de serviço.
+* 🚦 **Navegação Inteligente:** Menus e ações que se adaptam dinamicamente conforme as permissões do usuário.
+* 🔒 **Segurança de Dados:** Proteção direto na camada de banco de dados com **Row Level Security (RLS)**.
 
-Next.js (App Router)
+---
 
-Supabase (Auth + PostgreSQL)
+### 🧰 Tech Stack
 
-ShadCN UI
+O projeto utiliza as tecnologias mais modernas do ecossistema Fullstack:
 
-Tailwind CSS
+* **Framework:** [Next.js](https://nextjs.org/) (App Router)
+* **Backend & DB:** [Supabase](https://supabase.com/) (PostgreSQL + Auth)
+* **Interface:** [ShadCN UI](https://ui.shadcn.com/)
+* **Estilização:** [Tailwind CSS](https://tailwindcss.com/)
 
-Access Control
+---
 
-User roles are defined in the profiles table.
+### 🔑 Controle de Acesso
 
-Role	Access
-admin	Full access
-user	Restricted access
-Security
+A lógica de permissões é baseada na tabela `profiles`. Abaixo, a estrutura de privilégios:
 
-All critical operations are protected by Supabase Row Level Security.
+| Papel (Role) | Nível de Acesso | Descrição |
+| --- | --- | --- |
+| **Admin** 👑 | Total | Acesso completo a configurações, usuários e serviços. |
+| **User** 👤 | Restrito | Consulta e interação limitada aos serviços designados. |
 
-Setup
-Requirements
+> [!IMPORTANT]
+> **Segurança:** Todas as operações críticas são protegidas por políticas de RLS, garantindo que um usuário nunca acesse dados de terceiros sem autorização.
 
-Node.js 18+
+---
 
-Supabase project
+### ⚙️ Configuração do Ambiente
 
-Environment Variables
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+**Pré-requisitos:**
 
-Run
+* Node.js 18 ou superior
+* Conta ativa no Supabase
+
+**1. Variáveis de Ambiente:**
+Crie um arquivo `.env.local` na raiz do projeto:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=seu_url_aqui
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anon_aqui
+
+```
+
+**2. Instalação e Execução:**
+
+```bash
+# Instalar dependências
 npm install
+
+# Iniciar o servidor de desenvolvimento
 npm run dev
 
+```
 
+---
+
+**Gostaria que eu criasse uma seção de "Agradecimentos" ou "Aprendizados do Trabalho de Extensão" para detalhar o que você desenvolveu na faculdade?**
