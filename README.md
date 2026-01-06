@@ -1,7 +1,3 @@
-Com certeza! Deixei o texto com um visual profissional, organizado e pronto para um **README** de impacto no GitHub ou portfólio.
-
----
-
 # 🚀 Lead – Internal Management System
 
 Este projeto foi desenvolvido como um **Trabalho de Extensão Universitária**. O objetivo é aplicar conhecimentos técnicos em desenvolvimento web para resolver problemas reais de gestão interna, focando em segurança, escalabilidade e experiência do usuário (UX).
