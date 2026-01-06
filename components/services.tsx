@@ -37,6 +37,7 @@ const supabase = createSupabaseBrowser();
 interface Service {
   id: number;
   title: string;
+  responsible: string;
   service: string;
   category: string;
   date: string;
@@ -57,6 +58,7 @@ export default function ServicesManager() {
 
   const [form, setForm] = useState({
     title: '',
+    responsible: '',
     service: '',
     category: '',
     date: ''
@@ -106,7 +108,7 @@ export default function ServicesManager() {
      CREATE SERVICE
   ======================= */
   const handleCreate = async () => {
-    if (!form.title || !form.service || !form.category || !form.date) return;
+    if (!form.title || !form.responsible || !form.service || !form.category || !form.date) return;
 
     try {
       setSaving(true);
@@ -117,7 +119,7 @@ export default function ServicesManager() {
 
       if (error) throw error;
 
-      setForm({ title: '', service: '', category: '', date: '' });
+      setForm({ title: '', responsible: '', service: '', category: '', date: '' });
       setOpen(false);
       fetchServices();
     } finally {
@@ -152,10 +154,15 @@ export default function ServicesManager() {
               disabled={loading}
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            
             </Button>
 
-            <Link href="/protected/permissions">
-              <Button variant="outline">Autorizações</Button>
+            <Link href="/permissions">
+              <Button
+                variant="outline"
+              >
+                Autorizações
+              </Button>
             </Link>
 
             {isAdmin && (
@@ -175,11 +182,21 @@ export default function ServicesManager() {
 
                   <div className="grid flex-1 auto-rows-min gap-6 px-4 mt-4">
                     <div className="space-y-2">
-                      <Label>Título</Label>
+                      <Label>Bloco/Sala</Label>
                       <Input
                         value={form.title}
                         onChange={e =>
                           setForm({ ...form, title: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Responsável</Label>
+                      <Input
+                        value={form.responsible}
+                        onChange={e =>
+                          setForm({ ...form, responsible: e.target.value })
                         }
                       />
                     </div>
@@ -200,7 +217,6 @@ export default function ServicesManager() {
                             <SelectItem value="Entrada de Laser">Entrada de Laser</SelectItem>
                             <SelectItem value="Saida de Laser">Saida de Laser</SelectItem>
                             <SelectItem value="Entregador">Entregador</SelectItem>
-                            <SelectItem value="Atlasmed">Atlasmed</SelectItem>
                           </SelectGroup>
 
                           <SelectGroup>
@@ -271,37 +287,38 @@ export default function ServicesManager() {
           </div>
         </div>
 
-        {/* CARD DE BUSCA + DATA */}
-        <Card className="mb-6">
+        {/* Card de busca responsivo */}
+        <Card className="mb-4 md:mb-6">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Buscar Serviço</CardTitle>
-                <CardDescription>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+              <div className="w-full sm:w-auto">
+                <CardTitle className="text-lg md:text-xl">Buscar Serviço</CardTitle>
+                <CardDescription className="text-xs md:text-sm mt-1">
                   Pesquise por título, serviço ou categoria
                 </CardDescription>
               </div>
-
-              <div className="flex items-center gap-2">
-                <Label className="text-sm">Data:</Label>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Label htmlFor="date-filter" className="text-xs md:text-sm font-medium whitespace-nowrap">
+                  Data:
+                </Label>
                 <Input
+                  id="date-filter"
                   type="date"
                   value={selectedDate}
-                  onChange={e => setSelectedDate(e.target.value)}
-                  className="w-auto"
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-full sm:w-auto text-sm"
                 />
               </div>
             </div>
           </CardHeader>
-
           <CardContent>
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
               <Input
-                className="pl-10"
                 placeholder="Digite para buscar..."
                 value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
               />
             </div>
           </CardContent>
@@ -320,8 +337,8 @@ export default function ServicesManager() {
                   <CardHeader>
                     <CardTitle>{service.title}</CardTitle>
                     <CardDescription>{service.service}</CardDescription>
+                    <CardDescription>{service.responsible}</CardDescription>
                   </CardHeader>
-
                   <CardContent className="space-y-2">
                     <Badge>{service.category}</Badge>
 

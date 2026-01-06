@@ -29,8 +29,8 @@ export async function loginAction(formData: FormData): Promise<void> {
   }
   
   if (profile.role === 'admin') {
-    redirect('/protected/admin');
+    redirect('/admin');
   } else {
-  redirect('/protected/services');
+  redirect('/services');
   }
 }

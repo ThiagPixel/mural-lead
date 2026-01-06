@@ -8,14 +8,14 @@ export default async function ProtectedLayout({
 }: {
   children: React.ReactNode;
 }) {
-
   const supabase = await createSupabaseServer();
+
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
   if (!session) {
-    redirect('/');
+    redirect("/");
   }
 
   return (

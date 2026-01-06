@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Search, User, DoorOpen, Plus, X, Users, Loader2, RefreshCw } from 'lucide-react';
+import { Search, User, DoorOpen, Plus, X, Users, Loader2, RefreshCw, Trash2 } from 'lucide-react';
 import { createSupabaseBrowser } from '@/lib/supabase/client';
 import Link from 'next/link';
 
@@ -46,6 +46,7 @@ const Permissions: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [editingPermissions, setEditingPermissions] = useState<Permissions | null>(null);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+  const [userRole, setUserRole] = useState<'admin' | 'manutencao' | 'recepcao' | null>(null)
 
   const [newPermissions, setNewPermissions] = useState<NewPermissions>({
     name: '',
@@ -55,6 +56,26 @@ const Permissions: React.FC = () => {
   const [currentRoom, setCurrentRoom] = useState<string>('');
   const [bulkText, setBulkText] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>(getTodayDate());
+
+  const fetchUserRole = async () => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) return
+
+  const { data } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  setUserRole(data?.role ?? null)
+  }
+  useEffect(() => {
+  fetchPeople()
+  fetchUserRole()
+  }, [selectedDate])
 
   // BUSCAR PESSOAS DO SUPABASE
   const fetchPeople = async () => {
@@ -254,44 +275,49 @@ const Permissions: React.FC = () => {
 
 
   return (
-    <div className="min-h-screen from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen from-slate-50 to-slate-100 p-3 sm:p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8 flex items-center justify-between">
+        {/* Header responsivo */}
+        <div className="mb-6 md:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold mb-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 md:mb-2">
               Controle de Acesso
             </h1>
-            <p>
+            <p className="text-sm md:text-base">
               Gerencie as autorizações de acesso às salas
             </p>
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
             <Button 
               variant="outline" 
               size="icon"
               onClick={fetchPeople}
               disabled={loading}
+              className="shrink-0"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
 
-            <Link href="/protected/services">
+            <Link href="/services" className="flex-1 sm:flex-initial">
               <Button
                 variant="outline"
+                className="w-full sm:w-auto"
               >
                 Serviços
               </Button>
             </Link>
             
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+              {userRole === 'admin' && (
               <SheetTrigger asChild>
-                <Button className="gap-2">
+                <Button className="gap-2 flex-1 sm:flex-initial">
                   <Plus className="w-4 h-4" />
-                  Adicionar Pessoa
+                  <span className="hidden sm:inline">Adicionar Pessoa</span>
+                  <span className="sm:hidden">Adicionar</span>
                 </Button>
-              </SheetTrigger>
-              <SheetContent className="overflow-y-auto">
+              </SheetTrigger>)}
+              <SheetContent className="overflow-y-auto w-full sm:max-w-lg">
                 <SheetHeader>
                   <SheetTitle>Nova Autorização</SheetTitle>
                   <SheetDescription>
@@ -305,13 +331,13 @@ const Permissions: React.FC = () => {
                   </div>
                 )}
                 
-                <Tabs defaultValue="single" className="grid flex-1 auto-rows-min gap-6 px-4">
+                <Tabs defaultValue="single" className="grid flex-1 auto-rows-min gap-4 md:gap-6 px-2 md:px-4 mt-4">
                   <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="single">Uma Pessoa</TabsTrigger>
-                    <TabsTrigger value="bulk">Várias Pessoas</TabsTrigger>
+                    <TabsTrigger value="single" className="text-xs sm:text-sm">Uma Pessoa</TabsTrigger>
+                    <TabsTrigger value="bulk" className="text-xs sm:text-sm">Várias Pessoas</TabsTrigger>
                   </TabsList>
                   
-                  <TabsContent value="single" className="grid flex-1 auto-rows-min gap-6 px-4">
+                  <TabsContent value="single" className="grid flex-1 auto-rows-min gap-4 md:gap-6">
                     <div className="grid gap-3">
                       <Label htmlFor="date">Data de Autorização</Label>
                       <Input
@@ -355,7 +381,7 @@ const Permissions: React.FC = () => {
                           onKeyPress={(e) => e.key === 'Enter' && addRoom()}
                           disabled={saving}
                         />
-                        <Button type="button" onClick={addRoom} size="icon" disabled={saving}>
+                        <Button type="button" onClick={addRoom} size="icon" disabled={saving} className="shrink-0">
                           <Plus className="w-4 h-4" />
                         </Button>
                       </div>
@@ -397,7 +423,7 @@ const Permissions: React.FC = () => {
                     </Button>
                   </TabsContent>
                   
-                  <TabsContent value="bulk" className="space-y-6 py-6">
+                  <TabsContent value="bulk" className="space-y-4 md:space-y-6">
                     <div className="space-y-2">
                       <Label htmlFor="bulk-date">Data de Autorização</Label>
                       <Input
@@ -410,9 +436,9 @@ const Permissions: React.FC = () => {
 
                     <div className="space-y-2">
                       <Label htmlFor="bulk">Lista de Pessoas</Label>
-                      <p className="text-sm text-slate-500">
+                      <p className="text-xs sm:text-sm text-slate-500">
                         Digite uma pessoa por linha no formato:<br />
-                        <code className="px-2 py-1 rounded text-xs">
+                        <code className="px-2 py-1 rounded text-xs block mt-1 bg-slate-100">
                           Nome; CPF; Sala 1, Sala 2, Sala 3
                         </code>
                       </p>
@@ -422,18 +448,18 @@ const Permissions: React.FC = () => {
 João Santos; 234.567.890-11; Sala D, Sala E"
                         value={bulkText}
                         onChange={(e) => setBulkText(e.target.value)}
-                        rows={12}
-                        className="font-mono text-sm"
+                        rows={8}
+                        className="font-mono text-xs sm:text-sm"
                         disabled={saving}
                       />
                     </div>
 
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 md:p-4">
                       <div className="flex gap-2 text-blue-700 mb-2">
-                        <Users className="w-5 h-5" />
-                        <span className="font-semibold">Exemplo:</span>
+                        <Users className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
+                        <span className="font-semibold text-sm md:text-base">Exemplo:</span>
                       </div>
-                      <code className="text-xs text-blue-600 block whitespace-pre-wrap">
+                      <code className="text-xs text-blue-600 block whitespace-pre-wrap break-all">
                         Ana Costa; 345.678.901-22; Sala de RH, Auditório{'\n'}
                         Carlos Oliveira; 456.789.012-33; Laboratório A, Laboratório B
                       </code>
@@ -461,22 +487,23 @@ João Santos; 234.567.890-11; Sala D, Sala E"
         </div>
 
         {error && !isSheetOpen && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+          <div className="mb-4 p-3 md:p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
             {error}
           </div>
         )}
 
-        <Card className="mb-6">
+        {/* Card de busca responsivo */}
+        <Card className="mb-4 md:mb-6">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Buscar Autorização</CardTitle>
-                <CardDescription>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+              <div className="w-full sm:w-auto">
+                <CardTitle className="text-lg md:text-xl">Buscar Autorização</CardTitle>
+                <CardDescription className="text-xs md:text-sm mt-1">
                   Pesquise por nome, CPF ou sala
                 </CardDescription>
               </div>
-              <div className="flex items-center gap-2">
-                <Label htmlFor="date-filter" className="text-sm font-medium">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Label htmlFor="date-filter" className="text-xs md:text-sm font-medium whitespace-nowrap">
                   Data:
                 </Label>
                 <Input
@@ -484,7 +511,7 @@ João Santos; 234.567.890-11; Sala D, Sala E"
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-auto"
+                  className="w-full sm:w-auto text-sm"
                 />
               </div>
             </div>
@@ -503,133 +530,138 @@ João Santos; 234.567.890-11; Sala D, Sala E"
         </Card>
 
         {loading ? (
-          <Card className="p-12">
+          <Card className="p-8 md:p-12">
             <div className="text-center text-slate-500">
-              <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin" />
-              <p className="text-lg">Carregando...</p>
+              <Loader2 className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 md:mb-4 animate-spin" />
+              <p className="text-base md:text-lg">Carregando...</p>
             </div>
           </Card>
         ) : (
           <>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {/* Grid responsivo de cards */}
+            <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {filteredPeople.map((Permissions) => (
                 <Card key={Permissions.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-lg">
-                          {Permissions.name.split(' ').map(n => n[0]).join('')}
+                      <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+                        <div className="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm md:text-lg">
+                          {Permissions.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                         </div>
-                        <div>
-                          <CardTitle className="text-lg">{Permissions.name}</CardTitle>
-                          <CardDescription>CPF: {Permissions.cpf}</CardDescription>
+                        <div className="min-w-0 flex-1">
+                          <CardTitle className="text-base md:text-lg break-words">{Permissions.name}</CardTitle>
+                          <CardDescription className="text-xs md:text-sm truncate">CPF: {Permissions.cpf}</CardDescription>
                         </div>
                       </div>
-                      <div className={`w-3 h-3 rounded-full ${getStatusColor(Permissions.status)}`} />
+                      <div className={`w-3 h-3 shrink-0 rounded-full ${getStatusColor(Permissions.status)} ml-2`} />
                     </div>
                   </CardHeader>
                   <CardContent>
-                  <div className="flex gap-12">
                     <div>
-                      <div className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
-                        <DoorOpen className="w-4 h-4" />
-                        Salas Autorizadas
+                      <div className="flex items-center gap-2 text-xs md:text-sm font-medium text-slate-700 mb-2">
+                        <DoorOpen className="w-3 h-3 md:w-4 md:h-4 shrink-0" />
+                        <span>Salas Autorizadas</span>
                       </div>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1.5 md:gap-2">
                         {Permissions.rooms.map((room, idx) => (
                           <Badge 
                             key={idx} 
-                            className="bg-blue-100 text-blue-700 hover:bg-blue-200"
+                            className="bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs"
                           >
                             {room}
                           </Badge>
                         ))}
                       </div>
                     </div>
-                    <div className="mt-4 flex gap-2">
-                        <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEdit(Permissions)}
-                        >
-                        Editar
-                        </Button>
-                        <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeletePermissions(Permissions.id)}
-                        >
-                        Excluir
-                        </Button>
-                    </div>
-                  </div>
                   </CardContent>
+                  {userRole === 'admin' && (
+                  <CardFooter className="border-t flex flex-col sm:flex-row justify-end gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => openEdit(Permissions)}
+                      className="w-full sm:w-auto text-xs md:text-sm"
+                    >
+                      Resetar Senha
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDeletePermissions(Permissions.id)}
+                      className="w-full sm:w-auto text-xs md:text-sm"
+                    >
+                      <Trash2 className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                      Excluir
+                    </Button>
+                  </CardFooter>)}
                 </Card>
               ))}
             </div>
 
             {filteredPeople.length === 0 && !loading && (
-              <Card className="p-12">
+              <Card className="p-8 md:p-12">
                 <div className="text-center text-slate-500">
-                  <User className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg">Nenhuma pessoa autorizada encontrada</p>
-                  <p className="text-sm">Tente ajustar sua busca ou data</p>
+                  <User className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 md:mb-4 opacity-50" />
+                  <p className="text-base md:text-lg font-medium">Nenhuma pessoa autorizada encontrada</p>
+                  <p className="text-xs md:text-sm mt-1">Tente ajustar sua busca ou data</p>
                 </div>
               </Card>
             )}
 
-            <div className="mt-6 text-center text-sm text-slate-500">
+            <div className="mt-4 md:mt-6 text-center text-xs md:text-sm text-slate-500">
               Total de pessoas autorizadas para esta data: {filteredPeople.length}
             </div>
+
+            {/* Sheet de edição responsivo */}
             <Sheet open={isEditSheetOpen} onOpenChange={setIsEditSheetOpen}>
-                <SheetContent>
+                <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
                     <SheetHeader>
-                    <SheetTitle>Editar Autorização</SheetTitle>
-                    <SheetDescription>
+                      <SheetTitle>Editar Autorização</SheetTitle>
+                      <SheetDescription>
                         Atualize os dados da pessoa autorizada
-                    </SheetDescription>
+                      </SheetDescription>
                     </SheetHeader>
 
                     {editingPermissions && (
-                    <div className="grid flex-1 auto-rows-min gap-6 px-4">
+                    <div className="grid flex-1 auto-rows-min gap-4 md:gap-6 px-2 md:px-4 mt-4">
                         <div className="space-y-2">
-                        <Label>Nome</Label>
-                        <Input
+                          <Label>Nome</Label>
+                          <Input
                             value={editingPermissions.name}
                             onChange={(e) =>
-                            setEditingPermissions({ ...editingPermissions, name: e.target.value })
+                              setEditingPermissions({ ...editingPermissions, name: e.target.value })
                             }
-                        />
+                          />
                         </div>
 
                         <div className="space-y-2">
-                        <Label>CPF</Label>
-                        <Input
+                          <Label>CPF</Label>
+                          <Input
                             value={editingPermissions.cpf}
                             onChange={(e) =>
-                            setEditingPermissions({ ...editingPermissions, cpf: e.target.value })
+                              setEditingPermissions({ ...editingPermissions, cpf: e.target.value })
                             }
-                        />
+                          />
                         </div>
 
                         <div className="space-y-2">
-                        <Label>Salas (separadas por vírgula)</Label>
-                        <Input
+                          <Label>Salas (separadas por vírgula)</Label>
+                          <Input
                             value={editingPermissions.rooms.join(', ')}
                             onChange={(e) =>
-                            setEditingPermissions({
+                              setEditingPermissions({
                                 ...editingPermissions,
                                 rooms: e.target.value.split(',').map(r => r.trim())
-                            })
+                              })
                             }
-                        />
+                          />
                         </div>
                         <Button
-                        onClick={handleUpdatePermissions}
-                        disabled={saving}
-                        className="w-full"
+                          onClick={handleUpdatePermissions}
+                          disabled={saving}
+                          className="w-full"
                         >
-                        {saving ? 'Salvando...' : 'Salvar Alterações'}
+                          {saving ? 'Salvando...' : 'Salvar Alterações'}
                         </Button>
                     </div>
                     )}

@@ -22,10 +22,10 @@ export default function Navbar() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
   const navItems = [
-    { name: 'Dashboard', href: '/protected/admin' },
-    { name: 'Pessoas', href: '/protected/users' },
-    { name: 'Serviços', href: '/protected/services' },
-    { name: 'Autorizações', href: '/protected/permissions' },
+    { name: 'Dashboard', href: '/admin' },
+    { name: 'Pessoas', href: '/users' },
+    { name: 'Serviços', href: '/services' },
+    { name: 'Autorizações', href: '/permissions' },
   ];
 
   /* ======================
