@@ -250,6 +250,7 @@ export default function ServicesManager() {
                           <SelectGroup>
                             <SelectItem value="Manutenção">Manutenção</SelectItem>
                             <SelectItem value="Recepção">Recepção</SelectItem>
+                            <SelectItem value="Administração">Administração</SelectItem>
                           </SelectGroup>
                         </SelectContent>
                       </Select>

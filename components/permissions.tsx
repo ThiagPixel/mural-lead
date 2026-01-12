@@ -48,6 +48,9 @@ const Permissions: React.FC = () => {
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   const [userRole, setUserRole] = useState<'admin' | 'manutencao' | 'recepcao' | null>(null)
 
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+
   const [newPermissions, setNewPermissions] = useState<NewPermissions>({
     name: '',
     cpf: '',
@@ -76,6 +79,32 @@ const Permissions: React.FC = () => {
   fetchPeople()
   fetchUserRole()
   }, [selectedDate])
+
+  // UPLOAD DE IMAGEM PARA O SUPABASE STORAGE
+  const uploadImage = async (file: File) => {
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user) throw new Error('Usuário não autenticado');
+
+    const ext = file.name.split('.').pop();
+    const path = `authorized/${user.user.id}/${crypto.randomUUID()}.${ext}`;
+
+    const { error } = await supabase.storage
+      .from('images')
+      .upload(path, file);
+
+    if (error) throw error;
+
+    return path;
+  };
+
+  const getSignedImageUrl = async (path: string) => {
+    const { data } = await supabase.storage
+      .from('images')
+      .createSignedUrl(path, 300);
+
+    return data?.signedUrl || null;
+  };
+
 
   // BUSCAR PESSOAS DO SUPABASE
   const fetchPeople = async () => {
@@ -444,8 +473,8 @@ const Permissions: React.FC = () => {
                       </p>
                       <Textarea
                         id="bulk"
-                        placeholder="Maria Silva; 123.456.789-00; Sala A, Sala B, Sala C
-João Santos; 234.567.890-11; Sala D, Sala E"
+                        placeholder="Maria Silva; 123.456.789-00; Sala A, Sala B, Sala C 
+                        João Santos; 234.567.890-11; Sala D, Sala E"
                         value={bulkText}
                         onChange={(e) => setBulkText(e.target.value)}
                         rows={8}
