@@ -58,6 +58,7 @@ export default function ServicesManager() {
   const [selectedDate, setSelectedDate] = useState(getTodayDate());
   const [isAdmin, setIsAdmin] = useState(false);
 
+  const [editingService, setEditingService] = useState<Service | null>(null);
   const [form, setForm] = useState({
     title: '',
     responsible: '',
@@ -170,6 +171,38 @@ export default function ServicesManager() {
   await supabase
     .from('services')
     .update({ status: 'concluido' })
+    .eq('id', id);
+
+  fetchServices();
+  };
+
+  /* =======================
+     EDIT SERVICE
+  ======================= */
+  const handleEdit = (service: Service) => {
+  setForm({
+    title: service.title,
+    responsible: service.responsible,
+    service: service.service,
+    category: service.category,
+    date: service.date,
+    status: service.status,
+  });
+
+  setEditingService(service);
+  setOpen(true);
+  };
+
+  /* =======================
+     DELETE SERVICE
+  ======================= */
+  const handleDelete = async (id: number) => {
+  const confirmDelete = confirm('Tem certeza que deseja excluir este serviço?');
+  if (!confirmDelete) return;
+
+  await supabase
+    .from('services')
+    .delete()
     .eq('id', id);
 
   fetchServices();
@@ -418,7 +451,7 @@ export default function ServicesManager() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => {}}
+                      onClick={() => {handleEdit(service)}}
                       className="w-full sm:w-auto text-xs md:text-sm"
                     >
                       Editar
@@ -426,7 +459,7 @@ export default function ServicesManager() {
                     <Button
                       size="sm"
                       variant="destructive"
-                      onClick={() => {}}
+                      onClick={() => {handleDelete(service.id)}}
                       className="w-full sm:w-auto text-xs md:text-sm"
                     >
                     <Trash2 className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
