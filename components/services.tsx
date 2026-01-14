@@ -5,6 +5,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
@@ -28,7 +29,7 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Loader2, RefreshCw, Search } from 'lucide-react';
+import { Plus, Loader2, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { createSupabaseBrowser } from '@/lib/supabase/client';
 import Link from 'next/link';
 
@@ -41,6 +42,7 @@ interface Service {
   service: string;
   category: string;
   date: string;
+  status: 'aberto' | 'pendente' | 'concluido';
   created_at: string;
 }
 
@@ -61,7 +63,8 @@ export default function ServicesManager() {
     responsible: '',
     service: '',
     category: '',
-    date: ''
+    date: getTodayDate(),
+    status: 'aberto',
   });
 
   /* =======================
@@ -81,6 +84,20 @@ export default function ServicesManager() {
   };
 
   /* =======================
+      STATUS POR DATA
+  ======================= */
+  const getStatusByDate = (date: string, status: string) => {
+    if (status === 'concluido') return 'concluido';
+
+    const today = getTodayDate();
+
+    if (date > today) return 'aberto';
+    if (date < today) return 'pendente';
+
+  return 'aberto';
+  };
+
+  /* =======================
      FETCH SERVICES
   ======================= */
   const fetchServices = async () => {
@@ -92,7 +109,12 @@ export default function ServicesManager() {
       .eq('date', selectedDate)
       .order('created_at', { ascending: false });
 
-    setServices(data || []);
+    const normalized = (data || []).map(service => ({
+    ...service,
+    status: getStatusByDate(service.date, service.status),
+    }));
+
+    setServices(normalized);
     setLoading(false);
   };
 
@@ -119,12 +141,38 @@ export default function ServicesManager() {
 
       if (error) throw error;
 
-      setForm({ title: '', responsible: '', service: '', category: '', date: '' });
+      setForm({ title: '', responsible: '', service: '', category: '', date: getTodayDate(), status: 'Aberto' });
       setOpen(false);
       fetchServices();
     } finally {
       setSaving(false);
     }
+  };
+
+  /* =======================
+     STATUS BADGE
+  ======================= */
+  const statusBadge = (status: string) => {
+  switch (status) {
+    case 'aberto':
+      return <Badge className="bg-yellow-500">Aberto</Badge>;
+    case 'pendente':
+      return <Badge className="bg-red-500">Pendente</Badge>;
+    case 'concluido':
+      return <Badge className="bg-green-600">Concluído</Badge>;
+    }
+  };
+
+  /* =======================
+     MARK AS COMPLETED
+  ======================= */
+  const markAsCompleted = async (id: number) => {
+  await supabase
+    .from('services')
+    .update({ status: 'concluido' })
+    .eq('id', id);
+
+  fetchServices();
   };
 
   /* =======================
@@ -214,8 +262,8 @@ export default function ServicesManager() {
                         <SelectContent>
                           <SelectGroup>
                             <SelectLabel>Recepção</SelectLabel>
-                            <SelectItem value="Entrada de Laser">Entrada de Laser</SelectItem>
-                            <SelectItem value="Saida de Laser">Saida de Laser</SelectItem>
+                            <SelectItem value="Laser">Laser</SelectItem>
+                            <SelectItem value="Correios">Correios</SelectItem>
                             <SelectItem value="Entregador">Entregador</SelectItem>
                           </SelectGroup>
 
@@ -251,6 +299,7 @@ export default function ServicesManager() {
                             <SelectItem value="Manutenção">Manutenção</SelectItem>
                             <SelectItem value="Recepção">Recepção</SelectItem>
                             <SelectItem value="Administração">Administração</SelectItem>
+                            <SelectItem value="Sistema">Sistema</SelectItem>
                           </SelectGroup>
                         </SelectContent>
                       </Select>
@@ -341,7 +390,10 @@ export default function ServicesManager() {
                     <CardDescription>{service.responsible}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-2">
+                    <div className="space-x-2">
                     <Badge>{service.category}</Badge>
+                    {statusBadge(service.status)}
+                    </div>
 
                     <div className="text-sm text-muted-foreground">
                       Data: {service.date}
@@ -351,6 +403,38 @@ export default function ServicesManager() {
                       Criado em: {new Date(service.created_at).toLocaleString()}
                     </div>
                   </CardContent>
+                  <CardFooter className="border-t flex flex-col sm:flex-row justify-end gap-2">                    
+                    {service.status !== 'concluido' && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => markAsCompleted(service.id)}
+                    >
+                      Concluir
+                    </Button>
+                    )}
+                    {isAdmin === true && (
+                    <div className='flex gap-2 w-full sm:w-auto'>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {}}
+                      className="w-full sm:w-auto text-xs md:text-sm"
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => {}}
+                      className="w-full sm:w-auto text-xs md:text-sm"
+                    >
+                    <Trash2 className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                      Excluir
+                    </Button>
+                    </div>
+                    )}
+                  </CardFooter>
                 </Card>
               ))}
             </div>
