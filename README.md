@@ -73,5 +73,3 @@ npm run dev
 ```
 
 ---
-
-**Gostaria que eu criasse uma seção de "Agradecimentos" ou "Aprendizados do Trabalho de Extensão" para detalhar o que você desenvolveu na faculdade?**
