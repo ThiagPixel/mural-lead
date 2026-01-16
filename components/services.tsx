@@ -57,6 +57,7 @@ export default function ServicesManager() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDate, setSelectedDate] = useState(getTodayDate());
   const [isAdmin, setIsAdmin] = useState(false);
+  const [userRole, setUserRole] = useState<'admin' | 'manutencao' | 'recepcao' | null>(null) // Estado para armazenar o papel do usuário, torna inutil o is admin mas depois eu arrumo
 
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [form, setForm] = useState({
@@ -126,6 +127,25 @@ export default function ServicesManager() {
   useEffect(() => {
     fetchServices();
   }, [selectedDate]);
+ /* =======================
+     USER ROLE
+  ======================= */
+  const fetchUserRole = async () => {
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user) return;
+
+    const { data } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.user.id)
+      .single();
+
+    setUserRole(data?.role);
+  };
+
+  useEffect(() => {
+    fetchUserRole();
+  }, []);
 
   /* =======================
      CREATE SERVICE
@@ -367,8 +387,115 @@ export default function ServicesManager() {
                 </SheetContent>
               </Sheet>
             )}
-          </div>
-        </div>
+
+            {/*=======================
+                SHEET DA RECEPÇÃO        
+            =======================*/}
+            {userRole === 'recepcao' && (
+                  <Sheet open={open} onOpenChange={setOpen}>
+                    <SheetTrigger asChild>
+                        <Button className="gap-2">
+                        <Plus className="w-4 h-4" />
+                        Novo Serviço
+                        </Button>
+                    </SheetTrigger>
+
+                    {/* SHEET — INTACTO */}
+                    <SheetContent>
+                      <SheetHeader>
+                        <SheetTitle>Cadastrar Serviço</SheetTitle>
+                      </SheetHeader>
+
+                      <div className="grid flex-1 auto-rows-min gap-6 px-4 mt-4">
+                        <div className="space-y-2">
+                          <Label>Bloco/Sala</Label>
+                          <Input
+                            value={form.title}
+                            onChange={e =>
+                              setForm({ ...form, title: e.target.value })
+                            }
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Responsável</Label>
+                          <Input
+                            value={form.responsible}
+                            onChange={e =>
+                              setForm({ ...form, responsible: e.target.value })
+                            }
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Serviço</Label>
+                          <Select
+                            onValueChange={value =>
+                              setForm({ ...form, service: value })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione um Serviço" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectGroup>
+                                <SelectLabel>Recepção</SelectLabel>
+                                <SelectItem value="Laser">Laser</SelectItem>
+                                <SelectItem value="Entregador">Entregador</SelectItem>
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Categoria</Label>
+                          <Select
+                            onValueChange={value =>
+                              setForm({ ...form, category: value })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione uma categoria" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectGroup>
+                                <SelectItem value="Recepção">Recepção</SelectItem>
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Data</Label>
+                          <Input
+                            type="date"
+                            value={form.date}
+                            onChange={e =>
+                              setForm({ ...form, date: e.target.value })
+                            }
+                          />
+                        </div>
+
+                        <Button
+                          className="w-full"
+                          onClick={handleCreate}
+                          disabled={saving}
+                        >
+                          {saving ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Salvando
+                            </>
+                          ) : (
+                            'Salvar Serviço'
+                          )}
+                        </Button>
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+                )}
+              </div>
+            </div>
 
         {/* Card de busca responsivo */}
         <Card className="mb-4 md:mb-6">
